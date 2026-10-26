@@ -17,11 +17,10 @@ sys.path.insert(0, str(tools_dir))
 
 try:
     import bartholomew_guard
+
     BartholomewSecurityGuard = bartholomew_guard.BartholomewSecurityGuard
 except ImportError:
     from metagpt.tools.bartholomew_guard import BartholomewSecurityGuard
-
-
 
 
 class TestBartholomewSecurityGuard(unittest.TestCase):
@@ -57,6 +56,7 @@ class TestBartholomewSecurityGuard(unittest.TestCase):
     def test_wrap_action(self):
         class MockAction:
             name = "MockDevAction"
+
             def run(self, cmd: str):
                 return f"executed: {cmd}"
 

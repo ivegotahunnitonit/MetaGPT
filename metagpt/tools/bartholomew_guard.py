@@ -12,7 +12,7 @@ import hashlib
 import json
 import re
 import time
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 
 class BartholomewSecurityGuard:
@@ -23,7 +23,9 @@ class BartholomewSecurityGuard:
     """
 
     DESTRUCTIVE_SHELL_PATTERNS = [
-        re.compile(r"(\/bin\/|\/usr\/bin\/)?rm\s+([-\w\s]*?-[rfRF]+[-\w\s]*?)\s*(/|/\*|~|\$HOME|/etc|/var|/usr|[a-zA-Z]:[\\/])"),
+        re.compile(
+            r"(\/bin\/|\/usr\/bin\/)?rm\s+([-\w\s]*?-[rfRF]+[-\w\s]*?)\s*(/|/\*|~|\$HOME|/etc|/var|/usr|[a-zA-Z]:[\\/])"
+        ),
         re.compile(r":\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:"),  # fork bomb
         re.compile(r"mkfs(\.\w+)?\s+/dev/"),
         re.compile(r"dd\s+if=.*?\s+of=(/dev/|[a-zA-Z]:)"),
@@ -83,7 +85,9 @@ class BartholomewSecurityGuard:
 
                     if func_name in ("exec", "eval") and node.args:
                         if not isinstance(node.args[0], ast.Constant):
-                            receipt = self._build_receipt("VETO", "BTP-AST-003: Dynamic untrusted exec/eval invocation", t0)
+                            receipt = self._build_receipt(
+                                "VETO", "BTP-AST-003: Dynamic untrusted exec/eval invocation", t0
+                            )
                             if self.fail_closed:
                                 raise PermissionError(f"[BTP-METAGPT-VETO]: {receipt['reason']}")
                             return False, receipt["reason"], receipt
@@ -97,7 +101,9 @@ class BartholomewSecurityGuard:
 
         for pat in self.DESTRUCTIVE_SHELL_PATTERNS:
             if pat.search(cmd_str):
-                receipt = self._build_receipt("VETO", f"BTP-SHELL-001: Destructive shell command blocked: {cmd_str[:60]}", t0)
+                receipt = self._build_receipt(
+                    "VETO", f"BTP-SHELL-001: Destructive shell command blocked: {cmd_str[:60]}", t0
+                )
                 if self.fail_closed:
                     raise PermissionError(f"[BTP-METAGPT-VETO]: {receipt['reason']}")
                 return False, receipt["reason"], receipt
@@ -121,7 +127,6 @@ class BartholomewSecurityGuard:
 
         action_instance.run = guarded_run
         return action_instance
-
 
     def _build_receipt(self, verdict: str, reason: str, start_time: float) -> Dict[str, Any]:
         latency_us = (time.perf_counter() - start_time) * 1_000_000
